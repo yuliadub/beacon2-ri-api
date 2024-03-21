@@ -69,7 +69,7 @@ services:
 
   beacon:
     build: ..
-    image: egarchive/beacon:2.0
+    #image: egarchive/beacon:2.0
     hostname: beacon
     container_name: beacon
     volumes:

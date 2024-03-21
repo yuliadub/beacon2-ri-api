@@ -47,6 +47,8 @@ def generic_handler(db_fn, request=None):
     async def wrapper(request: Request):
         # Get params
         json_body = await request.json() if request.method == "POST" and request.has_body and request.can_read_body else {}
+        LOG.debug("QUERYYYYYYY ISSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS ")
+        LOG.debug(json_body)
         qparams = RequestParams(**json_body).from_request(request)
         skip = qparams.query.pagination.skip
         limit = qparams.query.pagination.limit
@@ -148,41 +150,41 @@ def generic_handler(db_fn, request=None):
         for dataset in response_datasets:
             LOG.debug(dataset)
             entity_schema, count, dataset_count, records = db_fn(entry_id, qparams, dataset)
-            
+
             if dataset_count != -1:
                 new_count+=dataset_count
                 datasets_docs[dataset]=records
                 datasets_count[dataset]=dataset_count
-        if include != 'NONE':
-            count=new_count
+            if include != 'NONE':
+                count=new_count
 
-        response_converted = records
+            response_converted = records
 
 
-        LOG.debug(qparams.query.requested_granularity)
-        
-        if qparams.query.requested_granularity == Granularity.BOOLEAN:
-            response = build_beacon_boolean_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
-        
-        elif qparams.query.requested_granularity == Granularity.COUNT:
-            if conf.max_beacon_granularity == Granularity.BOOLEAN:
+            LOG.debug(qparams.query.requested_granularity)
+            
+            if qparams.query.requested_granularity == Granularity.BOOLEAN:
                 response = build_beacon_boolean_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
+            
+            elif qparams.query.requested_granularity == Granularity.COUNT:
+                if conf.max_beacon_granularity == Granularity.BOOLEAN:
+                    response = build_beacon_boolean_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
+                else:
+                    response = build_beacon_count_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
+            
+            # qparams.query.requested_granularity == Granularity.RECORD:
             else:
-                response = build_beacon_count_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
-        
-        # qparams.query.requested_granularity == Granularity.RECORD:
-        else:
 
-            if conf.max_beacon_granularity == Granularity.BOOLEAN:
-                response = build_beacon_boolean_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
-            elif conf.max_beacon_granularity == Granularity.COUNT:
-                response = build_beacon_count_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
-            elif include == 'NONE':
-                response = build_beacon_resultset_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
-            else:
-                response = build_beacon_resultset_response_by_dataset(datasets_docs, datasets_count, count, qparams, lambda x, y: x, entity_schema)
-                
-        return await json_stream(request, response)
+                if conf.max_beacon_granularity == Granularity.BOOLEAN:
+                    response = build_beacon_boolean_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
+                elif conf.max_beacon_granularity == Granularity.COUNT:
+                    response = build_beacon_count_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
+                elif include == 'NONE':
+                    response = build_beacon_resultset_response(response_converted, count, qparams, lambda x, y: x, entity_schema)
+                else:
+                    response = build_beacon_resultset_response_by_dataset(datasets_docs, datasets_count, count, qparams, lambda x, y: x, entity_schema)
+                    
+            return await json_stream(request, response)
 
     return wrapper
 

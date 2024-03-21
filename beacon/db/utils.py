@@ -28,8 +28,12 @@ def get_count(collection: Collection, query: dict) -> int:
         LOG.debug("Returning estimated count")
         return collection.estimated_document_count()
     else:
-        #LOG.debug("FINAL QUERY (COUNT): {}".format(query))
+        LOG.debug("QUERYYYYYYY ISSSSSSSSSSSSSSSSSSSSSSSSSS ")
+        LOG.debug(collection)
         LOG.debug("Returning count")
+        #del query['$and']
+        #query['$or'] = [{'$or': [{'diseases.diseaseCode.label': {'$regex': 'acute'}}]}, {'$or': [{'diseases.diseaseCode.label': 'iron deficiency anaemia'}]}]
+        LOG.debug("FINAL QUERY (COUNT): {}".format(query))
         return collection.count_documents(query)
 
 

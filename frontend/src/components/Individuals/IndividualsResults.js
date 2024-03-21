@@ -58,7 +58,7 @@ function IndividualsResults (props) {
           isAuthenticated = true
         }
       }
-
+      console.log("HELLLLLooooooo")
       if (props.query !== null) {
         if (props.query.includes(',')) {
           queryStringTerm = props.query.split(',')
@@ -142,6 +142,7 @@ function IndividualsResults (props) {
       }
 
       try {
+              console.log("HELLLLLooooooo2")
         let res = await axios.get(configData.API_URL + '/info')
 
         beaconsList.push(res.data.response)
@@ -165,6 +166,9 @@ function IndividualsResults (props) {
             }
           }
           jsonData1 = JSON.stringify(jsonData1)
+          console.log("HELLLLLLOOOOOO")
+          console.log(jsonData1);
+          console.log(configData.API_URL)
 
           let token = null
           if (auth.userData === null) {
@@ -188,11 +192,14 @@ function IndividualsResults (props) {
             )
           }
           setTimeOut(true)
-
+          console.log("Response is: ")
+          console.log(JSON.stringify(res))
           if (
             res.data.responseSummary.numTotalResults < 1 ||
             res.data.responseSummary.numTotalResults === undefined
           ) {
+            console.log("are there no resutls?")
+            console.log(res.data.responseSummary.numTotalResults)
             setError('ERROR. Please check the query and retry')
             setNumberResults(0)
             setBoolean(false)
@@ -252,6 +259,9 @@ function IndividualsResults (props) {
             }
           }
           jsonData2 = JSON.stringify(jsonData2)
+          console.log("HELLLLLLOOOOOO")
+          console.log(jsonData2);
+          console.log(configData.API_URL)
           let token = null
           if (auth.userData === null) {
             token = getStoredToken()

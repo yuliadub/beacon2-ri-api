@@ -10,6 +10,7 @@ from beacon.db.utils import get_documents
 from beacon.db import client
 
 import logging
+import json
 
 LOG = logging.getLogger(__name__)
 
@@ -18,9 +19,22 @@ CURIE_REGEX = r'^([a-zA-Z0-9]*):\/?[a-zA-Z0-9]*$'
 def apply_filters(query: dict, filters: List[dict], collection: str) -> dict:
     LOG.debug("Filters len = {}".format(len(filters)))
     if len(filters) >= 1:
-        query["$and"] = []
+        containsOr = False
         for filter in filters:
             partial_query = {}
+            LOG.debug("FILTER IS CURRENTLY %s", filter)
+            if filter['id'].startswith('#or'):
+                containsOr = True
+                if '$or' not in query:
+                    query["$or"] = []
+                temp = filter['id']
+                temp2 = temp.replace('#or', '')
+                filter['id'] = temp2
+            else:
+                containsOr = False
+                if '$and' not in query:
+                    query["$and"] = []
+
             if "value" in filter:
                 LOG.debug(filter)
                 filter = AlphanumericFilter(**filter)
@@ -37,7 +51,7 @@ def apply_filters(query: dict, filters: List[dict], collection: str) -> dict:
             elif "similarity" in filter or "includeDescendantTerms" in filter or re.match(CURIE_REGEX, filter["id"]) and filter["id"].isupper():
                 filter = OntologyFilter(**filter)
                 LOG.debug("Ontology filter: %s", filter.id)
-                #partial_query = {"$text": defaultdict(str) }
+                #partial_query = {"$text": defaultdict(str) }s
                 #partial_query =  { "$text": { "$search": "" } } 
                 LOG.debug(partial_query)
                 partial_query = apply_ontology_filter(partial_query, filter, collection)
@@ -45,9 +59,21 @@ def apply_filters(query: dict, filters: List[dict], collection: str) -> dict:
                 filter = CustomFilter(**filter)
                 LOG.debug("Custom filter: %s", filter.id)
                 partial_query = apply_custom_filter(partial_query, filter, collection)
-            query["$and"].append(partial_query)
-            if query["$and"] == [{'$or': []}]:
-                query = {}
+            
+
+            if containsOr:
+                #smth
+                LOG.debug("!!!!!!!!!!!!!!!!!!!!!!! --------APPENDING PARTIFL QUERY %s", partial_query)
+                LOG.debug("!!!!!!!!!!!!!!!!!!!!!!! --------CURRENT DICTIONATY OR PRE %s", json.dumps(query["$or"]))
+                query["$or"].append(partial_query)
+                LOG.debug("!!!!!!!!!!!!!!!!!!!!!!! --------CURRENT DICTIONATY OR ADDED %s", json.dumps(query["$or"]))
+            else:
+                LOG.debug("!!!!!!!!!!!!!!!!!!!!!!! --------CURRENT DICTIONATY AND PRE %s", json.dumps(query["$and"]))
+                query["$and"].append(partial_query)
+                LOG.debug("!!!!!!!!!!!!!!!!!!!!!!! --------CURRENT DICTIONATY AND ADDED %s", json.dumps(query["$and"]))
+            if '$and' in query:
+                if query["$and"] == [{'$or': []}]:
+                    query = {}
 
 
     return query
@@ -125,6 +151,7 @@ def apply_ontology_filter(query: dict, filter: OntologyFilter, collection: str) 
             0,
             1
         )
+        query_terms = ""
         for doc2 in docs_2:
             query_terms = doc2['id']
         query_terms = query_terms.split(':')
@@ -197,6 +224,7 @@ def apply_ontology_filter(query: dict, filter: OntologyFilter, collection: str) 
             0,
             1
         )
+        query_terms = ""
         for doc2 in docs_2:
             query_terms = doc2['id']
         query_terms = query_terms.split(':')
@@ -243,6 +271,7 @@ def apply_ontology_filter(query: dict, filter: OntologyFilter, collection: str) 
         0,
         1
     )
+        query_terms = ""
         for doc2 in docs_2:
             query_terms = doc2['id']
         query_terms = query_terms.split(':')

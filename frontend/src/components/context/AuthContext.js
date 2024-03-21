@@ -71,7 +71,7 @@ function AuthProviderWrapper (props) {
 
     const currentTime = localStorage.getItem('currentTime')
 
-    console.log('AUTHENTICATING')
+    console.log('AUTHENTICATING2')
 
     if (currentTime - startTime > expirationTime) {
       ///GET NEW REFRESH TOKEN
