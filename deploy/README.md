@@ -37,16 +37,16 @@ With `mongo-express` we can see the contents of the database at [http://localhos
 
 #### Load the data
 
-To load the database we execute the following commands:
+To load the database we execute the following commands from root of the github repo:
 
 ```bash
-docker cp /path/to/analyses.json deploy_db_1:tmp/analyses.json
-docker cp /path/to/biosamples.json deploy_db_1:tmp/biosamples.json
-docker cp /path/to/cohorts.json deploy_db_1:tmp/cohorts.json
-docker cp /path/to/datasets.json deploy_db_1:tmp/datasets.json
-docker cp /path/to/genomicVariationsVcf.json deploy_db_1:tmp/genomicVariations.json
-docker cp /path/to/individuals.json deploy_db_1:tmp/individuals.json
-docker cp /path/to/runs.json deploy_db_1:tmp/runs.json
+docker cp deploy/data/analyses.json deploy_db_1:tmp/analyses.json
+docker cp deploy/data/biosamples.json deploy_db_1:tmp/biosamples.json
+docker cp deploy/data/cohorts.json deploy_db_1:tmp/cohorts.json
+docker cp deploy/data/datasets.json deploy_db_1:tmp/datasets.json
+docker cp deploy/data/genomicVariationsVcf.json deploy_db_1:tmp/genomicVariations.json
+docker cp deploy/data/individuals.json deploy_db_1:tmp/individuals.json
+docker cp deploy/data/runs.json deploy_db_1:tmp/runs.json
 ```
 
 ```bash
@@ -135,7 +135,7 @@ You can use POST to make the previous query. With a `request.json` file like thi
     "referenceBases": "A" ,
 "start": [ 16050074 ],
             "end": [ 16050568 ],
-	    "variantType": "SNP"
+        "variantType": "SNP"
         },
         "filters": [],
         "includeResultsetResponses": "HIT",
@@ -166,7 +166,7 @@ curl \
     "referenceBases": "A" ,
 "start": [ 16050074 ],
             "end": [ 16050568 ],
-	    "variantType": "SNP"
+        "variantType": "SNP"
         },
         "filters": [],
         "includeResultsetResponses": "HIT",
