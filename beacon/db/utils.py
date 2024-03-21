@@ -90,3 +90,124 @@ def get_cross_query_variants(ids: dict, cross_type: str, collection_id: str):
 
     LOG.debug(query)
     return query
+
+def join_query(collection: Collection,query: dict, original_id):
+    #LOG.debug(query)
+    excluding_fields={"_id": 0, original_id: 1}
+    return collection.find(query, excluding_fields).max_time_ms(100 * 1000)
+
+def id_to_biosampleId(collection: Collection,query: dict, original_id):
+    #LOG.debug(query)
+    excluding_fields={"_id": 0, original_id: 1}
+    return collection.find(query, excluding_fields).max_time_ms(100 * 1000)
+
+def get_docs_by_response_type(include: str, query: dict, datasets_dict: dict, dataset: str, limit: int, skip: int, mongo_collection, idq: str):
+    if include == 'MISS':
+        count = 0
+        query_count=query
+        i=1
+        for k, v in datasets_dict.items():
+            query_count["$or"]=[]
+            if k == dataset:
+                for id in v:
+                    if i < len(v):
+                        queryid={}
+                        queryid[idq]=id
+                        query_count["$or"].append(queryid)
+                        i+=1
+                    else:
+                        queryid={}
+                        queryid[idq]=id
+                        query_count["$or"].append(queryid)
+                        i=1
+                if query_count["$or"]!=[]:
+                    dataset_count = get_count(mongo_collection, query_count)
+                    if limit == 0 or dataset_count < limit:
+                        pass
+                    else:
+                        dataset_count = limit
+                    if dataset_count !=0:
+                        return count, -1, None
+                    #LOG.debug(dataset_count)
+                    docs = get_documents(
+                        mongo_collection,
+                        query_count,
+                        skip*limit,
+                        limit
+                    )
+                else:
+                    dataset_count=0
+    elif include == 'NONE':
+        count = get_count(mongo_collection, query)
+        dataset_count=0
+        docs = get_documents(
+        mongo_collection,
+        query,
+        skip*limit,
+        limit
+        )
+    elif include == 'HIT':
+        count=0
+        #LOG.debug(query)
+        #LOG.debug(count)
+        query_count=query
+        i=1
+        query_count["$or"]=[]
+        for k, v in datasets_dict.items():
+            if k == dataset:
+                for id in v:
+                    if i < len(v):
+                        queryid={}
+                        queryid[idq]=id
+                        query_count["$or"].append(queryid)
+                        i+=1
+                    else:
+                        queryid={}
+                        queryid[idq]=id
+                        query_count["$or"].append(queryid)
+                        i=1
+                if query_count["$or"]!=[]:
+                    #LOG.debug(query_count)
+                    dataset_count = get_count(mongo_collection, query)
+                    #LOG.debug(dataset_count)
+                    #LOG.debug(limit)
+                    docs = get_documents(
+                        mongo_collection,
+                        query_count,
+                        skip*limit,
+                        limit
+                    )
+                else:
+                    dataset_count=0
+        if dataset_count==0:
+            return count, -1, None
+    elif include == 'ALL':
+        count=0
+        query_count=query
+        i=1
+        query_count["$or"]=[]
+        for k, v in datasets_dict.items():
+            if k == dataset:
+                for id in v:
+                    if i < len(v):
+                        queryid={}
+                        queryid[idq]=id
+                        query_count["$or"].append(queryid)
+                        i+=1
+                    else:
+                        queryid={}
+                        queryid[idq]=id
+                        query_count["$or"].append(queryid)
+                        i=1
+                if query_count["$or"]!=[]:
+                    dataset_count = get_count(mongo_collection, query_count)
+                    #LOG.debug(dataset_count)
+                    docs = get_documents(
+                        mongo_collection,
+                        query_count,
+                        skip*limit,
+                        limit
+                    )
+                else:
+                    dataset_count=0
+    return count, dataset_count, docs
