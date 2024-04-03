@@ -96,7 +96,8 @@ services:
   ###########################################
   
   permissions:
-    image: egarchive/beacon:2.0
+    build: ..
+    #image: egarchive/beacon:2.0
     hostname: beacon-permissions
     container_name: beacon-permissions
     volumes:
