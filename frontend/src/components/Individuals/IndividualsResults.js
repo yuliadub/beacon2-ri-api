@@ -65,7 +65,7 @@ function IndividualsResults (props) {
         let queryToEdit = props.query
         // need to transform qiery if it has and or or in it
         // no validation for () or correctness at this time, just for sake of demo
-        if (queryToEdit.includes('OR')) {
+        if (queryToEdit.includes('AND')) {
           // transform (sex=male) and (diseases.diseaseCode=%acute% or diseases.diseaseCode=iron deficiency anaemia)
           // into sex=male,#ordiseases.diseaseCode=%acute%,#ordiseases.diseaseCode=iron deficiency anaemia 
 
@@ -83,22 +83,24 @@ function IndividualsResults (props) {
           
           console.log(members)
 
-          if(members[0].includes("OR") && members[1].includes("OR")) {
-              // will be two separate requests
-            // for now not supported, suggested person just run 2 queries
-          } 
-
           let orSet = [];
           let andSet = [];
-          if(members[0].includes("OR")) {
-              var data = members[0].split("OR");
-              orSet = data;
-              let data2 = members[1].split("AND");
-              andSet = data2;
+          if(members[0].includes("or") && members[1].includes("or")) {
+            orSet = members[0].split("or");
+            orSet = orSet.concat(members[1].split("or"))
+          } 
+          else if(members[0].includes("or")) {
+              orSet = members[0].split("or");
+              andSet = members[1].split("and");
           }
-          else if(members[1].includes("OR")) {
-              orSet = members[1].split("OR");
-              andSet = members[0].split("AND");
+          else if(members[1].includes("or")) {
+              orSet = members[1].split("or");
+              andSet = members[0].split("and");
+          }
+          else {
+            // there are no or or and in either
+            andSet = members[0].split("and");
+            andSet = andSet.concat(members[1].split("and"))
           }
 
           console.log("OR " + orSet)
@@ -107,10 +109,30 @@ function IndividualsResults (props) {
           let trimmed_or = orSet.map(s => s.trim());
           let trimmed_and = andSet.map(s => s.trim());
 
-          let newQuery = trimmed_and.join(",");
-          newQuery += ",#or" + trimmed_or.join(",#or");
-          // if the structure is (1 or 2 or 3) and (3 or 4 or 5), that will need to be split into 2 queries and then results will need to merge
+          let newQuery = ''
+          let newQuery2 = ''
 
+          if(trimmed_and.length > 0) {
+            newQuery = trimmed_and.join(",");
+          }
+
+          if(trimmed_or.length > 1) {
+            newQuery2 = ",#or" + trimmed_or.join(",#or");
+          }
+          else if(trimmed_or[0] !== undefined) {
+            newQuery2 = ",#or" + trimmed_or[0];
+          }
+
+          if(newQuery.charAt(0)=== ',') {
+            newQuery = newQuery.substring(1);
+          }
+
+          if(newQuery == '' && newQuery2.charAt(0)=== ',') {
+            newQuery2 = newQuery2.substring(1);
+          }
+
+          // if the structure is (1 or 2 or 3) and (3 or 4 or 5), that will need to be split into 2 queries and then results will need to merge
+          newQuery += newQuery2; 
           // if the structure is (1 and 2 and 3) and (5 or 6) that can run as a single query
           console.log(newQuery)
           queryToUse= newQuery; 
