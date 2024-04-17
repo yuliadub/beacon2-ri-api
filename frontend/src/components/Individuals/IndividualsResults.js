@@ -137,6 +137,20 @@ function IndividualsResults (props) {
           console.log(newQuery)
           queryToUse= newQuery; 
         }
+        else if (queryToEdit.includes('or') && !queryToEdit.includes('and')) {
+          queryToEdit = queryToEdit.replaceAll('(', '')
+          queryToEdit = queryToEdit.replaceAll(')', '')
+
+          console.log("Query " + queryToEdit)
+          let members_or = queryToEdit.split("or"); 
+          let members = members_or.map(s => s.trim());
+          let newQuery = ''
+          if(members.length > 1) {
+            newQuery = "#or" + members.join(",#or");
+          }
+          console.log(newQuery)
+          queryToUse= newQuery; 
+        }
 
 
         if (props.query.includes(',') || queryToUse.includes(',')) {
